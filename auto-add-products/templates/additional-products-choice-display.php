@@ -1,10 +1,22 @@
 <?php
 
 namespace autoAddProducts;
+
+use \Helper;
 ?>
 
+<?php
+global $post;
+$helper = Helper::get_instance();
+$product = $helper->_is_variable_product($post->ID);
+if ($product === false) {
+    $css = 'simple';
+} else {
+    $css = 'variable';
+}
+?>
 
-<div class="exclude-variations variations--custom-addon">
+<div class="exclude-variations variations--custom-addon <?php echo $css; ?>">
     <?php
     foreach ($additional_products_list as $key => $product) :
     ?>
@@ -45,6 +57,13 @@ namespace autoAddProducts;
                         <?php endforeach;
                         endif; ?>
                     </select>
+                    <div class="desc">
+                        <?php
+                        if (!empty($product['product_description'])) {
+                            echo $product['product_description'];
+                        }
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
