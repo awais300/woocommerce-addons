@@ -3,6 +3,7 @@
 namespace autoAddProducts\Admin;
 
 use \Singleton;
+use \Helper;
 
 class ACF extends Singleton
 {
@@ -98,33 +99,13 @@ class ACF extends Singleton
 			$sku_text = $sku_text . ' - ';
 		}
 
-		if ($this->_is_variable_product($post) !== false) {
+		$helper = Helper::get_instance();
+		if ($helper->_is_variable_product($post) !== false) {
 			$variation_text = $this->_get_formatted_variation_name($post);
 			return $sku_text . $variation_text;
 		}
 
 		return $sku_text . $text;
-	}
-
-	/**
-	 * Get variable product if its a variable product.
-	 * 
-	 * @param  int|WP_Post $post
-	 * @return WC_Product_Variation|false
-	 */
-	public function _is_variable_product($post)
-	{
-		$post_id = $post;
-		if (is_object($post)) {
-			$post_id = $post->ID;
-		}
-
-		$product = wc_get_product($post_id);
-		if ($product->is_type('variation')) {
-			return $product;
-		} else {
-			return false;
-		}
 	}
 
 	public function _get_formatted_variation_name($post)
