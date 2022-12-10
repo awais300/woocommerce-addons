@@ -15,7 +15,9 @@ Note: This file should be included via theme's functions.php
 
 //common
 include_once('Singleton.php');
+include_once('Helper.php');
 include_once('TemplateLoader.php');
+
 
 //Add-ons
 include_once('powder-coat-product/init.php');
@@ -23,4 +25,6 @@ include_once('checkout-checkbox/init.php');
 include_once('local-pickup-shipping/init.php');
 include_once('auto-add-warranty-product/init.php');
 include_once('auto-add-products/init.php');
-
+include_once('custom-attributes-fields/init.php');
+include_once('bogo-popup/init.php');
+include_once('customer-free-shipping/init.php');
