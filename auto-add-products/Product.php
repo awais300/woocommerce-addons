@@ -3,6 +3,7 @@
 namespace autoAddProducts;
 
 use \TemplateLoader;
+use \Helper;
 use autoAddProducts\Admin\ACF;
 
 
@@ -10,6 +11,7 @@ class Product
 {
 
 	/* ACF and form field name */
+	public const VERSION = 1.1;
 	public const FIELD_NAME = 'additional_product_lists';
 	public const SESS_ADDITIONAL_DATA = 'sess_additional_product_data';
 
@@ -18,15 +20,41 @@ class Product
 	{
 		$this->loader = TemplateLoader::get_instance();
 		add_action('woocommerce_before_single_variation', array($this, 'add_custom_field_option'), 10, 0);
+		add_action('woocommerce_before_add_to_cart_button', array($this, 'add_custom_field_option'), 10, 0);
 		add_filter('woocommerce_add_cart_item_data', array($this, 'product_add_on_cart_item_data'), 10, 2);
 		add_action('woocommerce_before_calculate_totals', array($this, 'update_products'), 20, 1);
-		add_action('wp_head', array($this, 'add_css'));
+		add_action('wp_head', array($this, 'add_css_or_js'), 1);
 		add_action('wp_enqueue_scripts', array($this, 'product_enqueue_scripts'));
 	}
 
 	public function product_enqueue_scripts()
 	{
-		wp_enqueue_script('custom-script', get_stylesheet_directory_uri()  . '/woocommerce-addons/auto-add-products/assets/js/product.js', array('jquery'));
+		global $post;
+		$product_id = $post->ID;
+		$additional_products_list = get_field(self::FIELD_NAME, $product_id);
+		if (empty($additional_products_list) || empty($additional_products_list[0])) {
+			return;
+		}
+
+		wp_enqueue_script('custom-script', get_stylesheet_directory_uri()  . '/woocommerce-addons/auto-add-products/assets/js/product-v4.js?=ver' . self::VERSION, array('jquery'));
+
+		if (is_product()) {
+			global $post;
+
+			$helper = Helper::get_instance();
+			if ($helper->_is_variable_product($post->ID)) {
+				$price = '';
+			} else {
+				$product = wc_get_product($post->ID);
+				$price = $product->get_price();
+			}
+		}
+
+		$inline = array(
+			'_geny_simple_product_price' => $price,
+		);
+
+		wp_add_inline_script('custom-script', 'const LOCAL = ' . json_encode($inline), 'before');
 	}
 
 	/**
@@ -34,13 +62,21 @@ class Product
 	 */
 	public function add_custom_field_option()
 	{
-		/*WC()->cart->empty_cart();
-		exit;*/
+		if (isset($_GET['genytest'])) {
+			WC()->cart->empty_cart();
+			exit;
+		}
 
-		global $product, $post;
+		global $post;
 		$product_id = $post->ID;
-		$additional_products_list = get_field(self::FIELD_NAME, $product_id);
 
+		$helper = Helper::get_instance();
+		$product = $helper->_is_variable_product($product_id);
+		if ($product !== false && current_filter() == 'woocommerce_before_add_to_cart_button') {
+			return;
+		}
+
+		$additional_products_list = get_field(self::FIELD_NAME, $product_id);
 		if (empty($additional_products_list) || empty($additional_products_list[0])) {
 			return;
 		}
@@ -118,8 +154,8 @@ class Product
 
 	public function add_product_to_cart($id)
 	{
-		$acf = ACF::get_instance();
-		$product = $acf->_is_variable_product($id);
+		$helper = Helper::get_instance();
+		$product = $helper->_is_variable_product($id);
 
 		if ($product !== false) {
 			WC()->cart->add_to_cart($product->get_parent_id(), 1, $id);
@@ -128,11 +164,9 @@ class Product
 		}
 	}
 
-	public function add_css()
+	public function add_css_or_js()
 	{
 		if (is_product()) {
-			$data = array();
-
 			$this->loader->get_template(
 				'styles.css.php',
 				$data,
