@@ -6,4 +6,4 @@
  */
 
 include('SingleProduct.php');
-include('admin/Product.php');
+//include('admin/Product.php');

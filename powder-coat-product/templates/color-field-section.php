@@ -28,11 +28,15 @@ $color_field_image = ! empty( $color_field_setting['image'] ) ? $color_field_set
                         </div>
                     </div>
                     <div class="paint-notes">
+                        <?php if(empty($color_settings['color_description'])) :?>
                         <i>Applies ONLY to the drop hitch, not the ball mount and pintle lock.</i>
                         <br />
                         <i>Lead time 6-8 weeks for custom colors.</i>
                         <br />
                         <i>Please call <a class="a-exclude" href="(574) 218-6363">(574) 218-6363</a> if you want an attachment powder coated.</i>
+                    <?php else: ?>
+                        <?php echo $color_settings['color_description']; ?>
+                    <?php endif;?>
                     </div>
                 </div>
             </div>
