@@ -33,17 +33,12 @@ jQuery(document).ready(function($) {
     }
 
     function geny_display_main_price(main_price, additional_price) {
-        console.log(main_price);
-        console.log(additional_price);
-
         if (!main_price) {
             return;
         }
 
         new_price = Number(main_price) + Number(additional_price);
         new_price = Number(new_price).toFixed(2);
-
-        console.log(new_price);
 
         html = '<span class="woocommerce-Price-currencySymbol">$</span>' + new_price;
         $('.woocommerce-variation-price span.woocommerce-Price-amount bdi').html(html);
