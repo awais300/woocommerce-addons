@@ -25,6 +25,9 @@ class Product
 		add_action('woocommerce_before_calculate_totals', array($this, 'update_products'), 20, 1);
 		add_action('wp_head', array($this, 'add_css_or_js'), 1);
 		add_action('wp_enqueue_scripts', array($this, 'product_enqueue_scripts'));
+		//add_action('woocommerce_cart_calculate_fees', array($this, 'add_additional_product_discount'));
+		add_filter('woocommerce_get_cart_item_from_session', array($this, 'get_user_custom_data_session'), 1, 3 );
+
 	}
 
 	public function product_enqueue_scripts()
@@ -98,7 +101,7 @@ class Product
 	{
 
 		if (isset($_POST[self::FIELD_NAME]) && !empty(array_filter($_POST[self::FIELD_NAME]))) {
-			$sess_data = $_POST[self::FIELD_NAME];
+			$sess_data = stripslashes_deep($_POST[self::FIELD_NAME]);
 			WC()->session->set(self::SESS_ADDITIONAL_DATA, $sess_data);
 		} else {
 			WC()->session->set(self::SESS_ADDITIONAL_DATA, array());
@@ -107,8 +110,21 @@ class Product
 		return $cart_item;
 	}
 
+
+	public function get_user_custom_data_session($item, $values, $key)
+	{
+
+		$sess_data = WC()->session->get(self::SESS_ADDITIONAL_DATA);
+		if (!empty($sess_data)) {
+			$item['custom_data'] = $sess_data;
+		}
+		return $item;
+	}
+
 	public function update_products($cart)
 	{
+		dd($cart);
+		exit;
 		if (is_cart() || is_checkout()) {;
 		} else {
 			return;
@@ -130,13 +146,18 @@ class Product
 
 		$sess_data = WC()->session->get(self::SESS_ADDITIONAL_DATA);
 		if (empty($sess_data)) {
-			WC()->session->get(self::SESS_ADDITIONAL_DATA, array());
+			WC()->session->set(self::SESS_ADDITIONAL_DATA, array());
 			return;
 		}
 
+		error_log('awaitest');
+		error_log(print_r($sess_data, true));
+
 		if (is_array($sess_data)) {
-			foreach ($sess_data as $ids) {
-				$product_ids = explode('|', $ids);
+			foreach ($sess_data as $key => $json_str) {
+				$data_array = json_decode($json_str, true);
+				$product_ids = $data_array['product_ids'];
+
 				if (!empty($product_ids)) {
 					foreach ($product_ids as $id) {
 						if (!empty($id)) {
@@ -147,8 +168,11 @@ class Product
 			}
 		}
 
+		// Apply additional proudct discount.
+		$this->add_additional_product_discount($cart, $sess_data);
+
 		// empty the session variable.
-		WC()->session->get(self::SESS_ADDITIONAL_DATA, array());
+		//WC()->session->set(self::SESS_ADDITIONAL_DATA, array());
 	}
 
 
@@ -158,14 +182,55 @@ class Product
 		$product = $helper->_is_variable_product($id);
 
 		if ($product !== false) {
+			error_log('adding variable');
 			WC()->cart->add_to_cart($product->get_parent_id(), 1, $id);
 		} else {
+			error_log('adding simple');
 			WC()->cart->add_to_cart($id);
+		}
+	}
+
+	public function add_additional_product_discount($cart, $sess_data)
+	{
+
+		if (is_admin() && !defined('DOING_AJAX')) {
+			return;
+		}
+
+		error_log('dimitri');
+
+		//$discounts = wp_list_pluck($data_array, 'discount');
+		$minus_the_fee = 0;
+
+		if (empty($sess_data)) {
+			return;
+		}
+
+		error_log('dimitri2');
+
+		if (is_array($sess_data)) {
+			foreach ($sess_data as $key => $json_str) {
+				$data_array = json_decode($json_str, true);
+				$discount = $data_array['discount'];
+
+				if (!empty($discount)) {
+					$minus_the_fee = $minus_the_fee + $discount;
+				}
+			}
+		}
+
+		// Makit it in minus to subtract fee from total.
+		$minus_the_fee = absint($minus_the_fee);
+		$minus_the_fee = $minus_the_fee * -1;
+
+		if ($minus_the_fee !== 0) {
+			$cart->add_fee(__('Discounts applied', 'geny-woocommerce'), $minus_the_fee, false);
 		}
 	}
 
 	public function add_css_or_js()
 	{
+		$data = array();
 		if (is_product()) {
 			$this->loader->get_template(
 				'styles.css.php',
