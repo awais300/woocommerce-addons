@@ -37,6 +37,10 @@ class TemplateLoader {
 	public function get_template( $template_name, $args = array(), $template_path, $echo = false ) {
 		$output = null;
 
+		if(empty($args)) {
+			$args = array();
+		}
+		
 		$template_path = $template_path . $template_name;
 
 		if ( file_exists( $template_path ) ) {
