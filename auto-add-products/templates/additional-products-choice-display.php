@@ -43,20 +43,16 @@ if ($product === false) {
                             $options = $product['product_dropdown_options'];
                             foreach ($options as $option) :
                                 $label  = $option['label'];
-
-                                $option_discount_with_products = array();
-                                $option_discount_with_products['product_ids'] = $option['products'];
-                                $option_discount_with_products['discount'] = $option['product_discount'];
-
+                                $ids = implode('|', $option['products']);
                                 $total_price = $product_obj->get_products_price($option['products']);
 
                                 $formatted_total_price = '';
-                                if (!empty($option['products'])) {
+                                if (!empty($ids)) {
                                     $formatted_total_price = ' (+$' . $total_price . ')';
                                 }
                         ?>
 
-                                <option data-price="<?php echo $total_price; ?>" data-discount="<?php echo $option['product_discount']; ?>" value='<?php echo json_encode($option_discount_with_products) ?>'><?php echo $label . $formatted_total_price ?></option>
+                                <option data-price="<?php echo $total_price; ?>" value="<?php echo $ids; ?>"><?php echo $label . $formatted_total_price ?></option>
 
                         <?php endforeach;
                         endif; ?>
