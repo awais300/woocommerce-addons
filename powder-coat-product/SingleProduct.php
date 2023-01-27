@@ -128,6 +128,9 @@ class SingleProduct
 	 */
 	public function product_add_on_display_order($product, $order_item)
 	{
+		if(!is_admin()) {
+			return $product;
+		}
 
 		if ($order_item->get_meta(self::COLOR_DISPLAY_NAME)) {
 			$product->add_meta_data(self::COLOR_DISPLAY_NAME, $order_item->get_meta(self::COLOR_DISPLAY_NAME), true);
