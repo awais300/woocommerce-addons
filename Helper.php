@@ -30,9 +30,13 @@ class Helper extends Singleton
         }
     }
 
+    /**
+     * Check if number is odd.
+     * @param  int $number
+     * @return boolean
+     */
     public function is_odd($number)
     {
-        error_log('number to check for odd is: '. $number);
         if (empty($number) || !is_numeric($number)) {
             throw new \Exception('Invalid number');
         }
@@ -44,5 +48,36 @@ class Helper extends Singleton
             error_log('number is odd');
             return true; // Odd.
         }
+    }
+
+    /**
+     * Check if current user belong to dealer role.
+     * @return boolean
+     */
+    public function is_dealer() {
+        $dealer_roles = array(
+            'dealer', // 25% Dealer.
+            'dealer_30', // 30% Dealer.
+            'master_dealer', // 35% Master Dealer.
+            'distributor_dealer', // DistributerDealer.
+            'iron_bear', // 42.5% Dealer.
+        );
+
+        if (get_current_user_id() == 0) {
+            return false;
+        }
+
+        $user = wp_get_current_user();
+        $roles = (array) $user->roles;
+
+        $found = false;
+        foreach ($roles as $key => $role) {
+            $found = array_search($role, $dealer_roles);
+            if ($found !== false) {
+                return true;
+            }
+        }
+
+        return $found;
     }
 }
