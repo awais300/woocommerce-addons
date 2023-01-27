@@ -2,27 +2,28 @@
 namespace LocalPickup;
 
 class Checkout {
+	Private const VERSION = 1.1;
 	private const DISTANCE_RANGE = 50.00;
 	private const GOOGLE_API_KEY = 'AIzaSyBbIS3jSmSJRQmqwP456YvsqVuVfm30Ik0';
 	private const STORE_POSTCODE = 46550;
 
 	public function __construct() {
-		add_filter('woocommerce_cart_shipping_packages', array($this, 'woocommerce_shipping_rate_cache_invalidation'), 10);
+		//add_filter('woocommerce_cart_shipping_packages', array($this, 'woocommerce_shipping_rate_cache_invalidation'), 10);
 		add_filter('woocommerce_package_rates', array($this, 'enable_local_pickup_shipping'), 10, 2);
 	}
 
 	/*Invalidate cache so that hook "woocommerce_package_rates" can trigger every time*/
 	public function woocommerce_shipping_rate_cache_invalidation($packages) {
 		foreach ($packages as &$package) {
-			$package['rate_cache'] = wp_rand();
+			$package['rate_cache'] = self::VERSION;
 		}
 		return $packages;
 	}
 
 	public function enable_local_pickup_shipping($rates, $package) {
-		if ($this->is_dealer() == false) {
+		/*if ($this->is_dealer() == false) {
 			return $rates;
-		}
+		}*/
 
 		$allow_local_pickup = false;
 		$distance = $this->calculate_distance($package);
@@ -31,7 +32,7 @@ class Checkout {
 			$allow_local_pickup = false;
 		}
 
-		if ($distance <= self::DISTANCE_RANGE) {
+		if ($distance <= self::DISTANCE_RANGE && $this->is_dealer() ===  true) {
 			$allow_local_pickup = true;
 		}
 
@@ -64,11 +65,14 @@ class Checkout {
 		}
 
 		$json = wp_remote_retrieve_body($distance_data);
-
 		$data = json_decode($json, true);
-		$distance_data = $data['rows'][0]['elements'][0];
 
-		if ($distance_data['status'] != 'OK' && $data['status'] != 'OK') {
+		if($data['status'] != 'OK') {
+			return false;
+		}
+
+		$distance_data = $data['rows'][0]['elements'][0];
+		if ($distance_data['status'] != 'OK') {
 			return false;
 		} else {
 			$distance = $distance_data['distance']['value'] / 1609; //Converting meters to miles
