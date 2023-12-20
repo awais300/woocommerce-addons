@@ -1,4 +1,5 @@
 <?php
+
 namespace Customization;
 
 /**
@@ -10,9 +11,10 @@ class Customization
 	public function __construct()
 	{
 		add_action('wp_footer', array($this, 'action_wp_footer'));
+		add_action('woocommerce_review_order_before_shipping', array($this, 'custom_content_before_shipping'));
 	}
 
-	function action_wp_footer()
+	public function action_wp_footer()
 	{
 		if (!is_checkout()) {
 			return;
@@ -51,6 +53,28 @@ class Customization
 				}
 			});
 		</script>
+	<?php
+	}
+
+
+	public function custom_content_before_shipping()
+	{ ?>
+		<style>
+			.custom-content p {
+				color: #737373;
+				padding: 0;
+				margin-top: 0;
+				line-height: 0px;
+				margin-bottom: 20px;
+				font-size: 13px;
+				color: red;
+			}
+		</style>
+
+		<div class="custom-content">
+			<p>Time stated is shipping transit time, not timeline when item will be received.</p>
+		</div>
+
 <?php
 	}
 }
