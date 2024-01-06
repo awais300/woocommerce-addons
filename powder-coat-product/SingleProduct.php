@@ -6,7 +6,7 @@ class SingleProduct
 	private const COLOR_FIELD_NAME = 'geny_paint_color_code';
 	private const COLOR_GROUP = 'custom_color_option';
 	private const COLOR_DISPLAY_NAME = 'Paint Color Code';
-	private const ADDITIONAL_PRICE_TEXT = 'Custom Color Charge';
+	private const ADDITIONAL_PRICE_TEXT = 'Non-Refundable Custom Color Fee';
 	private const ADDITIONAL_PRICE = '300';
 
 	public function __construct()
@@ -40,10 +40,10 @@ class SingleProduct
 			return;
 		}
 
-		$allowed = $product->get_meta(self::ADMIN_IS_PAINT_PROD);
 		$color_settings = get_field(self::COLOR_GROUP, $product_id);
+		$allowed = $color_settings[self::ADMIN_IS_PAINT_PROD];
 
-		if ($allowed != 'yes') {
+		if (empty($allowed) || $allowed != 'yes') {
 			return;
 		}
 
@@ -154,7 +154,7 @@ class SingleProduct
 		}
 
 		if ($fee !== 0) {
-			$cart->add_fee(__('Total custom color code fee', 'geny-woocommerce'), $fee, false);
+			$cart->add_fee(__('Total custom color code fee (Non-Refundable)', 'geny-woocommerce'), $fee, false);
 		}
 	}
 
