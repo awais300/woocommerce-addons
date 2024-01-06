@@ -68,7 +68,8 @@ class Product
 
 			// Check for specific product IDs and change quantity
 			if (in_array($product_id, $specific_ids)) {
-				$cart->set_quantity($cart_item_key, $warranty_quantity); // Change quantity
+				if ($warranty_quantity > 0) // this was added by Dan on 5/4/23 as they want to sell the warranty as a standalone product and this was setting the quantity to 0 when they tried to add it to the cart.
+					$cart->set_quantity($cart_item_key, $warranty_quantity); // Change quantity
 			}
 		}
 	}
