@@ -19,8 +19,8 @@ class Product
 	public function __construct()
 	{
 		$this->loader = TemplateLoader::get_instance();
-		add_action('woocommerce_before_single_variation', array($this, 'add_custom_field_option'), 10, 0);
-		add_action('woocommerce_before_add_to_cart_button', array($this, 'add_custom_field_option'), 10, 0);
+		add_action('woocommerce_before_single_variation', array($this, 'add_custom_field_option'), 9, 0);
+		add_action('woocommerce_before_add_to_cart_button', array($this, 'add_custom_field_option'), 9, 0);
 		add_filter('woocommerce_add_cart_item_data', array($this, 'product_add_on_cart_item_data'), 10, 2);
 		add_action('woocommerce_before_calculate_totals', array($this, 'update_products'), 20, 1);
 		add_action('wp_head', array($this, 'add_css_or_js'), 1);
