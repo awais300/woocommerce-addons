@@ -67,7 +67,7 @@ class Checkout
 		?>
 		<div class="clear-cart woocommerce wfacp_order_sec wfacp_order_summary_layout_9">
 			<h2 class="wfacp-list-title wfacp_section_title wfacp-text-left wfacp-normal">Your Cart </h2>
-			<?php if ($show_cart_clear_button == true) : ?>
+			<?php if ($show_cart_clear_button == true || true /* apply to all users per Kendra 2023/11/9 */) : ?>
 				<a onclick="return confirm('Are you sure you want to clear your cart?');" href="<?php echo wc_get_checkout_url(); ?>?clear-cart">
 					<button class="clear-cart-button button button-primary wfacp_next_page_button cont-shop" type="button">Clear Cart</button>
 				</a>
