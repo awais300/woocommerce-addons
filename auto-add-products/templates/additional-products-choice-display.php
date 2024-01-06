@@ -41,6 +41,7 @@ if ($product === false) {
                         <?php if (!empty($product['product_dropdown_options']) && !empty($product['product_dropdown_options'][0])) :
 
                             $options = $product['product_dropdown_options'];
+							if (is_array($options)) :
                             foreach ($options as $option) :
                                 $label  = $option['label'];
                                 $ids = implode('|', $option['products']);
@@ -55,6 +56,7 @@ if ($product === false) {
                                 <option data-price="<?php echo $total_price; ?>" value="<?php echo $ids; ?>"><?php echo $label . $formatted_total_price ?></option>
 
                         <?php endforeach;
+							endif;
                         endif; ?>
                     </select>
                     <div class="desc">
